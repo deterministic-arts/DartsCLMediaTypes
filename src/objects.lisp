@@ -174,3 +174,12 @@
           (format-mime-type-1 type subtype parameters :stream stream :case :preserve)))
     object))
 
+(defun media-type-string (object)
+  (let* ((format (media-type-format object))
+         (type (format-descriptor-type format))
+         (subtype (format-descriptor-subtype format))
+         (parameters (media-type-parameters object)))
+    (with-output-to-string (stream)
+      (format-mime-type-1 type subtype parameters
+                          :stream stream
+                          :case :preserve))))

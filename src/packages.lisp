@@ -34,4 +34,5 @@
            #:format-descriptor= #:format-descriptor/= #:parse-format-descriptor
            #:format-descriptor-wild-p #:subformatp #:media-type #:media-type-p
            #:media-type-format #:media-type-parameters #:parse-media-type #:make-media-type
-           #:format-descriptor-subtype #:format-descriptor-type #:media-type-parameter))
+           #:format-descriptor-subtype #:format-descriptor-type #:media-type-parameter
+           #:media-type-string))
