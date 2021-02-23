@@ -37,6 +37,12 @@
 (defvar *format-table* (make-weak-hash-table :test 'equal :weakness :value
                                              :weakness-matters t))
 
+(defun intern-format-descriptor (key type subtype)
+  (with-lock-held (*format-lock*)
+    (or (gethash key *format-table*)
+        (setf (gethash key *format-table*)
+              (make-format-descriptor-1 key type subtype (sxhash key))))))
+
 (defun make-format-descriptor (type &optional (subtype "*"))
   (let* ((type (string-downcase (simple-mime-token type)))
          (subtype (string-downcase (simple-mime-token subtype)))
@@ -44,10 +50,13 @@
     (when (and (string= type "*") (not (string= subtype "*")))
       (error "the format ~S allows only the variant ~S"
              type "*"))
-    (with-lock-held (*format-lock*)
-      (or (gethash key *format-table*)
-          (setf (gethash key *format-table*)
-                (make-format-descriptor-1 key type subtype (sxhash key)))))))
+    (intern-format-descriptor key type subtype)))
+
+(defmethod make-load-form ((object format-descriptor) &optional environment)
+  (declare (ignore environment))
+  `(intern-format-descriptor ,(format-descriptor-string object)
+                             ,(format-descriptor-type object)
+                             ,(format-descriptor-subtype object)))
 
 (declaim (inline format-descriptor-equal format-descriptor= format-descriptor<=
                  format-descriptor>= format-descriptor> format-descriptor/=))
@@ -136,6 +145,11 @@
 
 (defun make-media-type (format &optional parameters)
   (make-media-type-1 (format-descriptor format) parameters))
+
+(defmethod make-load-form ((object media-type) &optional environment)
+  (declare (ignore environment))
+  `(make-media-type-1 ',(media-type-format object)
+                      ',(media-type-parameters object)))
 
 (defun parse-media-type (string &key (start 0) end)
   (multiple-value-bind (type subtype parameters) (parse-mime-type-1 string :start start :end end :junk-allowed t)
