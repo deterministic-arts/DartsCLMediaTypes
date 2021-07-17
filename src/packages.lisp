@@ -35,4 +35,4 @@
            #:format-descriptor-wild-p #:subformatp #:media-type #:media-type-p
            #:media-type-format #:media-type-parameters #:parse-media-type #:make-media-type
            #:format-descriptor-subtype #:format-descriptor-type #:media-type-parameter
-           #:media-type-string))
+           #:media-type-string #:media-type-equal #:media-type-hash))

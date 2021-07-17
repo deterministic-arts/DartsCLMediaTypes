@@ -144,12 +144,24 @@
   (parameters nil :type list :read-only t))
 
 (defun make-media-type (format &optional parameters)
-  (make-media-type-1 (format-descriptor format) parameters))
+  (make-media-type-1 (format-descriptor format)
+                     (sort (mapcar (lambda (pair) (cons (string-downcase (car pair)) (cdr pair)))
+                                   parameters)
+                           #'string< :key #'car)))
 
 (defmethod make-load-form ((object media-type) &optional environment)
   (declare (ignore environment))
   `(make-media-type-1 ',(media-type-format object)
                       ',(media-type-parameters object)))
+
+(defun media-type-equal (obj1 obj2)
+  (and (format-descriptor= (media-type-format obj1) (media-type-format obj2))
+       (equal (media-type-parameters obj1) (media-type-parameters obj2))))
+
+(defun media-type-hash (object)
+  (logand most-positive-fixnum
+          (+ (* 31 (format-descriptor-hash (media-type-format object)))
+             (sxhash (media-type-parameters object)))))
 
 (defun parse-media-type (string &key (start 0) end)
   (multiple-value-bind (type subtype parameters) (parse-mime-type-1 string :start start :end end :junk-allowed t)
@@ -158,7 +170,7 @@
         nil)))
 
 (defun media-type-parameter (key object &optional default)
-  (let ((pair (assoc key (media-type-parameters object) :test #'string-equal)))
+  (let ((pair (assoc (string-downcase key) (media-type-parameters object) :test #'string<)))
     (if pair (values (cdr pair) t) (values default nil))))
 
 (defgeneric media-type (object)

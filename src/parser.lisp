@@ -162,7 +162,7 @@
            (multiple-value-bind (token unused) (next-token)
              (declare (ignore unused))
              (cond
-               ((null token) (values format variant (nreverse parameters) nil))
+               ((null token) (values format variant (sort parameters #'string< :key #'car) nil))
                ((not (eq token :semicolon)) (fail after-1 format variant parameters "junk found after parameter list"))
                (t (multiple-value-bind (token key) (next-token)
                     (cond
@@ -176,7 +176,7 @@
                                  (if (not (or (eq token :atom) (eq token :quoted)))
                                      (fail after-1 format variant parameters "expected the parameter value for ~S, but got ~S instead" key token)
                                      (parse-parameters after-2 format variant 
-                                                       (cons (cons key value) 
+                                                       (cons (cons (string-downcase key) value) 
                                                              parameters))))))))))))))
       (parse-media-type start))))
 
