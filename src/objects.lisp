@@ -170,7 +170,7 @@
         nil)))
 
 (defun media-type-parameter (key object &optional default)
-  (let ((pair (assoc (string-downcase key) (media-type-parameters object) :test #'string<)))
+  (let ((pair (assoc (string-downcase key) (media-type-parameters object) :test #'string=)))
     (if pair (values (cdr pair) t) (values default nil))))
 
 (defgeneric media-type (object)
